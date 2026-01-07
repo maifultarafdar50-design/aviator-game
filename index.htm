@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Professional Game</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0b0b; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .game-card { background: #1c1c1e; width: 90%; max-width: 400px; padding: 20px; border-radius: 15px; box-shadow: 0 0 20px rgba(255, 0, 68, 0.3); text-align: center; }
+        .wallet { font-size: 18px; color: #ffcc00; margin-bottom: 10px; }
+        .screen { background: #000; height: 200px; border-radius: 10px; position: relative; overflow: hidden; border: 1px solid #333; margin-bottom: 20px; }
+        #multiplier { font-size: 50px; font-weight: bold; position: absolute; width: 100%; top: 40%; z-index: 10; transition: color 0.3s; }
+        #plane { position: absolute; bottom: 10px; left: 10px; font-size: 40px; transform: rotate(0deg); transition: bottom 0.1s, left 0.1s; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input { background: #333; border: none; padding: 10px; color: white; border-radius: 5px; text-align: center; font-size: 16px; }
+        button { border: none; border-radius: 5px; padding: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        #betBtn { background: #28a745; color: white; }
+        #cashBtn { background: #ffc107; color: black; display: none; }
+        .history { margin-top: 15px; font-size: 12px; color: #888; text-align: left; border-top: 1px solid #333; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <div class="wallet">ব্যালেন্স: <span id="balance">1000</span> TK</div>
+    
+    <div class="screen">
+        <div id="multiplier">1.00x</div>
+        <div id="plane">✈️</div>
+    </div>
+
+    <div class="controls">
+        <input type="number" id="betAmount" value="10" min="10">
+        <button id="betBtn">BET ধরুন</button>
+        <button id="cashBtn">CASH OUT</button>
+    </div>
+
+    <div class="history" id="history">লাস্ট রেজাল্ট: </div>
+</div>
+
+<script>
+    let balance = 1000;
+    let currentMultiplier = 1.00;
+    let gameActive = false;
+    let betPlaced = false;
+    let crashPoint = 0;
+    let interval;
+
+    const balanceEl = document.getElementById('balance');
+    const multiplierEl = document.getElementById('multiplier');
+    const planeEl = document.getElementById('plane');
+    const betBtn = document.getElementById('betBtn');
+    const cashBtn = document.getElementById('cashBtn');
+    const betInput = document.getElementById('betAmount');
+    const historyEl = document.getElementById('history');
+
+    function startGame() {
+        let amount = parseFloat(betInput.value);
+        if (amount > balance) return alert("ব্যালেন্স নেই!");
+
+        balance -= amount;
+        balanceEl.innerText = balance;
+        
+        betPlaced = true;
+        gameActive = true;
+        currentMultiplier = 1.00;
+        multiplierEl.style.color = "white";
+        betBtn.style.display = "none";
+        cashBtn.style.display = "block";
+        
+        // ৩% সম্ভাবনা আছে শুরুতে ক্র্যাশ হওয়ার
+        crashPoint = (Math.random() > 0.03) ? (Math.pow(Math.random(), -1)).toFixed(2) : 1.00;
+        if(crashPoint > 10) crashPoint = 5.40; // লিমিট দেওয়া হলো
+
+        interval = setInterval(() => {
+            currentMultiplier += 0.01;
+            let displayMult = currentMultiplier.toFixed(2);
+            multiplierEl.innerText = displayMult + "x";
+
+            // প্লেন মুভমেন্ট
+            planeEl.style.left = Math.min(80, (currentMultiplier-1)*15) + "%";
+            planeEl.style.bottom = Math.min(70, (currentMultiplier-1)*10) + "%";
+
+            if (displayMult >= parseFloat(crashPoint)) {
+                crashGame();
+            }
+        }, 80);
+    }
+
+    function cashOut() {
+        if (!betPlaced) return;
+        let winAmount = parseFloat(betInput.value) * currentMultiplier;
+        balance += winAmount;
+        balanceEl.innerText = balance.toFixed(2);
+        betPlaced = false;
+        cashBtn.innerText = "জিতলেন: " + winAmount.toFixed(2);
+        cashBtn.style.background = "#00ffcc";
+    }
+
+    function crashGame() {
+        clearInterval(interval);
+        gameActive = false;
+        multiplierEl.style.color = "red";
+        multiplierEl.innerText = "FLEW AWAY!";
+        
+        historyEl.innerHTML += `<span style="color: ${crashPoint > 2 ? '#28a745' : '#ff0044'}">${crashPoint}x, </span>`;
+
+        setTimeout(() => {
+            resetUI();
+        }, 2000);
+    }
+
+    function resetUI() {
+        multiplierEl.innerText = "1.00x";
+        multiplierEl.style.color = "white";
+        planeEl.style.left = "10px";
+        planeEl.style.bottom = "10px";
+        betBtn.style.display = "block";
+        cashBtn.style.display = "none";
+        cashBtn.style.background = "#ffc107";
+        cashBtn.innerText = "CASH OUT";
+        betPlaced = false;
+    }
+
+    betBtn.addEventListener('click', startGame);
+    cashBtn.addEventListener('click', cashOut);
+
+</script>
+</body>
+</html>

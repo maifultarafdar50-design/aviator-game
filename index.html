@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>Aviator Demo Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background: #0b0f2b;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .game-box {
+      margin-top: 40px;
+    }
+    .multiplier {
+      font-size: 48px;
+      margin: 20px 0;
+    }
+    button {
+      padding: 12px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      background: #00ff99;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: gray;
+    }
+    .plane {
+      font-size: 60px;
+      margin-top: 20px;
+    }
+    .qr {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>✈️ Aviator Demo Game</h2>
+
+  <div class="game-box">
+    <div class="plane">✈️</div>
+    <div class="multiplier" id="multi">1.00x</div>
+    <button id="startBtn" onclick="startGame()">START</button>
+  </div>
+
+  <div class="qr">
+    <p>Scan QR Code</p>
+    <!-- এখানে আপনার QR কোড ইমেজ বসাবেন -->
+    <img src="qr.png" width="150">
+  </div>
+
+<script>
+  let multiplier = 1.00;
+  let interval;
+  let crashPoint = (Math.random() * 5 + 1).toFixed(2);
+
+  function startGame() {
+    multiplier = 1.00;
+    crashPoint = (Math.random() * 5 + 1).toFixed(2);
+    document.getElementById("startBtn").disabled = true;
+
+    interval = setInterval(() => {
+      multiplier += 0.01;
+      document.getElementById("multi").innerText = multiplier.toFixed(2) + "x";
+
+      if (multiplier >= crashPoint) {
+        clearInterval(interval);
+        document.getElementById("multi").innerText = "💥 CRASH!";
+        document.getElementById("startBtn").disabled = false;
+      }
+    }, 100);
+  }
+</script>
+
+</body>
+</html>
